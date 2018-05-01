@@ -1,0 +1,8 @@
+*.DS_Store
+*.pyc
+__pycache__
+._*
+.coverage
+htmlcov/*
+tmp*
+.nfs*
