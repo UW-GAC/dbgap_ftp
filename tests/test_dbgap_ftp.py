@@ -23,3 +23,14 @@ class DbgapFtpTest(TestCase):
         """Fails with proper error if non-existent server is requested."""
         with self.assertRaisesRegex(socket.gaierror, '[Errno 8]'):
             dbgap_ftp.DbgapFtp(server='foo')
+
+    def test_get_base_study_directory_works_with_positive_integer(self):
+        self.assertIsInstance(self.cnx._get_base_study_directory(KNOWN_PHS), str)
+
+    def test_get_base_study_directory_fails_with_negative_number(self):
+        with self.assertRaisesRegex(ValueError, dbgap_ftp.DbgapFtp.ERROR_STUDY_VALUE):
+            self.cnx._get_base_study_directory(-1)
+
+    def test_get_base_study_directory_fails_with_zero(self):
+        with self.assertRaisesRegex(ValueError, dbgap_ftp.DbgapFtp.ERROR_STUDY_VALUE):
+            self.cnx._get_base_study_directory(0)
