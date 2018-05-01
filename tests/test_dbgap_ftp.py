@@ -35,8 +35,13 @@ class DbgapFtpTest(TestCase):
         with self.assertRaisesRegex(ValueError, dbgap_ftp.DbgapFtp.ERROR_STUDY_VALUE):
             self.object._get_base_study_directory(0)
 
+    def test_get_study_version_strings_works_with_correct_input(self):
+        study_dir = self.object._get_base_study_directory(KNOWN_PHS)
+        versions = self.object._get_study_version_strings(KNOWN_PHS)
+        for v in versions:
+            self.assertTrue(v.startswith(os.path.join(study_dir, 'phs')), msg='version {} does not match expected pattern'.format(v))
+
     def test_get_highest_study_version_string_works_with_correct_input(self):
-        # Check existing directories at dbGaP.
         study_dir = self.object._get_base_study_directory(KNOWN_PHS)
         versions = self.object.ftp.nlst(study_dir)
         versions = [v for v in versions if v.startswith(os.path.join(study_dir, 'phs'))]

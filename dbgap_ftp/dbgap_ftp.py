@@ -6,6 +6,7 @@ class DbgapFtp(object):
 
     ERROR_STUDY_VALUE = 'study accession must be an integer > 0'
     ERROR_STUDY_VERSION_VALUE = 'study version must be an integer > 0'
+    STUDY_VERSION_REGEX = r'^phs(\d{6})\.v(\d+)\.p(\d+)$'
 
     def __init__(self, server='ftp.ncbi.nlm.nih.gov'):
         """Create a new instance of the object and open an ftp connection."""
@@ -25,9 +26,15 @@ class DbgapFtp(object):
             raise ValueError(self.ERROR_STUDY_VALUE)
         return '/dbgap/studies/phs{accession:06d}'.format(accession=accession)
 
-    def get_highest_study_version_string(self, accession):
+    def _get_study_version_strings(self, accession):
         directory = self._get_base_study_directory(accession)
         subdirs = self.ftp.nlst(directory)
-        regex = re.compile(r'^phs(\d{6})\.v(\d+)\.p(\d+)$')
-        matches = [x for x in subdirs if regex.match(os.path.basename(x))]
-        return matches[::-1][0]
+        regex = re.compile(self.STUDY_VERSION_REGEX)
+        study_versions = [x for x in subdirs if regex.match(os.path.basename(x))]
+        study_versions.sort()
+        return study_versions
+
+    def get_highest_study_version_string(self, accession):
+        study_versions = self._get_study_version_strings(accession)
+        return study_versions[::-1][0]
+        
