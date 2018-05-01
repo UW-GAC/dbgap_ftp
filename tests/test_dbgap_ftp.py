@@ -39,21 +39,20 @@ class DbgapFtpTest(TestCase):
         study_dir = self.object._get_base_study_directory(KNOWN_PHS)
         versions = self.object._get_study_version_strings(KNOWN_PHS)
         for v in versions:
-            self.assertTrue(v.startswith(os.path.join(study_dir, 'phs')), msg='version {} does not match expected pattern'.format(v))
+            self.assertTrue(v.startswith('phs'), msg='version {} does not match expected pattern'.format(v))
 
-    def test_get_highest_study_version_string_works_with_correct_input(self):
+    def test_get_highest_study_version_works_with_correct_input(self):
         study_dir = self.object._get_base_study_directory(KNOWN_PHS)
         versions = self.object.ftp.nlst(study_dir)
         versions = [v for v in versions if v.startswith(os.path.join(study_dir, 'phs'))]
-        most_recent_version = self.object.get_highest_study_version_string(KNOWN_PHS)
-        expected_version = 'phs{:06d}.v{}'.format(KNOWN_PHS, len(versions))
-        self.assertIsInstance(most_recent_version, str)
-        self.assertIn(expected_version, most_recent_version)
+        most_recent_version = self.object.get_highest_study_version(KNOWN_PHS)
+        self.assertIsInstance(most_recent_version, int)
+        self.assertEqual(most_recent_version, len(versions))
 
     def test_get_highest_study_version_string_fails_with_zero_accession(self):
         with self.assertRaises(ValueError):
-            self.object.get_highest_study_version_string(0)
+            self.object.get_highest_study_version(0)
 
     def test_get_highest_study_version_string_fails_with_negative_accession(self):
         with self.assertRaises(ValueError):
-            self.object.get_highest_study_version_string(-1)
+            self.object.get_highest_study_version(-1)
