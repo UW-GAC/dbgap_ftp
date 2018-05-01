@@ -14,10 +14,12 @@ class DbgapFtpTest(TestCase):
 
     def setUp(self):
         self.object = dbgap_ftp.DbgapFtp()
+        self.temp_dir = tempfile.mkdtemp()
 
     def test_init_creates_ftp_connection(self):
         """Creates an ftp connection and stores it as an attribute."""
         self.assertIsInstance(self.object.ftp, FTP)
+        shutil.rmtree(self.temp_dir)
 
     def test_init_fails_with_nonexistent_server(self):
         """Fails with proper error if non-existent server is requested."""
@@ -85,3 +87,10 @@ class DbgapFtpTest(TestCase):
         for dd in dds:
             self.assertTrue(dd.endswith('.xml'),
                             msg='data dictionary {} does not end with xml'.format(dd))
+
+    def test_download_file_works_as_expected(self):
+        dds = self.object.get_data_dictionaries(KNOWN_PHS, 1)
+        filename = dds[0]
+        local_file = self.object._download_file(filename, self.temp_dir)
+        self.assertEqual(local_file, os.path.join(self.temp_dir, os.path.basename(filename)))
+        self.assertTrue(os.path.exists(local_file))

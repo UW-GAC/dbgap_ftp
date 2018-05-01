@@ -12,6 +12,7 @@ class DbgapFtp(object):
         """Create a new instance of the object and open an ftp connection."""
         self.ftp = FTP(server, timeout=10)
         self.ftp.login()
+        self.n_attempts = 5
 
     def __del__(self):
         """Close any open ftp connections."""
@@ -58,3 +59,21 @@ class DbgapFtp(object):
         files = [os.path.basename(x) for x in files if 'data_dict' in x and x.endswith('xml')]
         files = [os.path.join(dd_directory, x) for x in files if x.endswith('xml')]
         return files
+
+    def _download_file(self, filename, local_directory):
+        base = os.path.basename(filename)
+        local_file = os.path.join(local_directory, base)
+        # Attempt to download the file, retrying if necessary.
+        i = 0
+        done = False
+        while not done:
+            try:
+                with open(local_file, 'wb') as f:
+                    # Use recommended 32MB for buffer size.
+                    self.ftp.retrbinary('RETR {}'.format(filename), f.write, 33554432)
+                done = True
+            except TimeoutError:
+                i += 1
+                if i >= self.n_attempts:
+                    raise
+        return local_file
