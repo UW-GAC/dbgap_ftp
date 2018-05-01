@@ -1,6 +1,6 @@
 import os
 from ftplib import FTP, socket
-
+import re
 
 class DbgapFtp(object):
 
@@ -24,4 +24,10 @@ class DbgapFtp(object):
         if accession <= 0:
             raise ValueError(self.ERROR_STUDY_VALUE)
         return '/dbgap/studies/phs{accession:06d}'.format(accession=accession)
-        
+
+    def get_highest_study_version_string(self, accession):
+        directory = self._get_base_study_directory(accession)
+        subdirs = self.ftp.nlst(directory)
+        regex = re.compile(r'^phs(\d{6})\.v(\d+)\.p(\d+)$')
+        matches = [x for x in subdirs if regex.match(os.path.basename(x))]
+        return matches[::-1][0]
