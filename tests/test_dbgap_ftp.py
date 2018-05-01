@@ -56,3 +56,24 @@ class DbgapFtpTest(TestCase):
     def test_get_highest_study_version_string_fails_with_negative_accession(self):
         with self.assertRaises(ValueError):
             self.object.get_highest_study_version(-1)
+
+    def test_get_study_version_directory_works_as_expected(self):
+        directory = self.object._get_study_version_directory(KNOWN_PHS, 1)
+        self.assertIsInstance(directory, str)
+        # Make sure it exists.
+        tmp = self.object.ftp.pwd()
+        self.object.ftp.cwd(directory)
+        # And change back to the original directory.
+        self.object.ftp.cwd(tmp)
+
+    def test_get_study_version_directory_fails_with_nonexistent_version(self):
+        with self.assertRaisesRegex(RuntimeError, 'does not exist'):
+            self.object._get_study_version_directory(KNOWN_PHS, 999)
+
+    def test_get_study_version_directory_fails_with_zero_version(self):
+        with self.assertRaisesRegex(ValueError, dbgap_ftp.DbgapFtp.ERROR_STUDY_VERSION_VALUE):
+            self.object._get_study_version_directory(KNOWN_PHS, 0)
+
+    def test_get_study_version_directory_fails_with_negative_version(self):
+        with self.assertRaisesRegex(ValueError, dbgap_ftp.DbgapFtp.ERROR_STUDY_VERSION_VALUE):
+            self.object._get_study_version_directory(KNOWN_PHS, -1)

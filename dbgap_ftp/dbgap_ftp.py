@@ -38,3 +38,15 @@ class DbgapFtp(object):
         study_versions = self._get_study_version_strings(accession)
         versions = [int(self.REGEX_STUDY_VERSION.search(v).group(2)) for v in study_versions]
         return max(versions)
+
+    def _get_study_version_directory(self, accession, version):
+        if version <= 0:
+            raise ValueError(self.ERROR_STUDY_VERSION_VALUE)
+        study_directory = self._get_base_study_directory(accession)
+        study_versions = self._get_study_version_strings(accession)
+        expected_prefix = 'phs{:06d}.v{}.p'.format(accession, version)
+        matching_versions = [x for x in study_versions if x.startswith(expected_prefix)]
+        if len(matching_versions) == 0:
+            raise RuntimeError('phs{:06d}.v{} does not exist'.format(accession, version))
+        assert len(matching_versions) == 1
+        return os.path.join(study_directory, matching_versions[0])
