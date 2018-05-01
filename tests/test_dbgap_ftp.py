@@ -94,3 +94,15 @@ class DbgapFtpTest(TestCase):
         local_file = self.object._download_file(filename, self.temp_dir)
         self.assertEqual(local_file, os.path.join(self.temp_dir, os.path.basename(filename)))
         self.assertTrue(os.path.exists(local_file))
+
+    def test_download_files(self):
+        requested_files = self.object.get_data_dictionaries(KNOWN_PHS, 1)
+        downloaded_files, failed = self.object.download_files(requested_files, self.temp_dir, silent=True)
+        # Did you get the right number of files returned?
+        self.assertEqual(len(requested_files), len(downloaded_files) + len(failed))
+        # Get only the basenames of all processed files.
+        processed_files = downloaded_files + failed
+        processed_files = [os.path.basename(x) for x in processed_files]
+        # Does each file exist in the local directory?
+        for requested_file in requested_files:
+            self.assertTrue(os.path.basename(requested_file) in processed_files)

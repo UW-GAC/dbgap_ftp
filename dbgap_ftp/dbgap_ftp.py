@@ -77,3 +77,20 @@ class DbgapFtp(object):
                 if i >= self.n_attempts:
                     raise
         return local_file
+
+    def download_files(self, filenames, local_directory, silent=False):
+        downloaded_files = []
+        failed = []
+        for filename in filenames:
+            try:
+                local_file = self._download_file(filename, local_directory)
+                downloaded_files.append(local_file)
+            except TimeoutError:
+                failed.append(filename)
+        if not silent:
+            if len(failed > 0):
+                print('{} failed files:'.format(len(failed)))
+                for failed_file in failed:
+                    print('  {}'.format(failed_file))
+            print('done!')
+        return downloaded_files, failed
