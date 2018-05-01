@@ -50,3 +50,11 @@ class DbgapFtp(object):
             raise RuntimeError('phs{:06d}.v{} does not exist'.format(accession, version))
         assert len(matching_versions) == 1
         return os.path.join(study_directory, matching_versions[0])
+
+    def get_data_dictionaries(self, accession, version):
+        study_version_directory = self._get_study_version_directory(accession, version)
+        dd_directory = os.path.join(study_version_directory, 'pheno_variable_summaries/')
+        files = self.ftp.nlst(dd_directory)
+        files = [os.path.basename(x) for x in files if 'data_dict' in x and x.endswith('xml')]
+        files = [os.path.join(dd_directory, x) for x in files if x.endswith('xml')]
+        return files

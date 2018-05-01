@@ -77,3 +77,11 @@ class DbgapFtpTest(TestCase):
     def test_get_study_version_directory_fails_with_negative_version(self):
         with self.assertRaisesRegex(ValueError, dbgap_ftp.DbgapFtp.ERROR_STUDY_VERSION_VALUE):
             self.object._get_study_version_directory(KNOWN_PHS, -1)
+
+    def test_get_data_dictionaries_works_as_expected(self):
+        dds = self.object.get_data_dictionaries(KNOWN_PHS, 1)
+        self.assertIsInstance(dds, list)
+        self.assertTrue(len(dds) > 0)
+        for dd in dds:
+            self.assertTrue(dd.endswith('.xml'),
+                            msg='data dictionary {} does not end with xml'.format(dd))
