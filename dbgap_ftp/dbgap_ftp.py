@@ -35,9 +35,14 @@ class DbgapFtp(object):
         study_versions.sort()
         return study_versions
 
+    def _get_study_versions(self, accession):
+        version_directories = self._get_study_version_strings(accession)
+        versions = [int(self.REGEX_STUDY_VERSION.search(v).group(2)) for v in version_directories]
+        versions.sort()
+        return versions
+
     def get_highest_study_version(self, accession):
-        study_versions = self._get_study_version_strings(accession)
-        versions = [int(self.REGEX_STUDY_VERSION.search(v).group(2)) for v in study_versions]
+        versions = self._get_study_versions(accession)
         return max(versions)
 
     def _get_study_version_directory(self, accession, version):

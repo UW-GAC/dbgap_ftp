@@ -43,6 +43,10 @@ class DbgapFtpTest(TestCase):
         for v in versions:
             self.assertTrue(v.startswith('phs'), msg='version {} does not match expected pattern'.format(v))
 
+    def test_get_study_versions_works_with_correct_input(self):
+        versions = self.object._get_study_versions(KNOWN_PHS)
+        self.assertEqual(versions, list(range(1, len(versions) + 1)))
+
     def test_get_highest_study_version_works_with_correct_input(self):
         study_dir = self.object._get_base_study_directory(KNOWN_PHS)
         versions = self.object.ftp.nlst(study_dir)
