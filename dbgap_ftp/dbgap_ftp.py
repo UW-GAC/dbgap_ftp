@@ -1,6 +1,7 @@
 import os
-from ftplib import FTP, socket
+from ftplib import FTP
 import re
+
 
 class DbgapFtp(object):
 
