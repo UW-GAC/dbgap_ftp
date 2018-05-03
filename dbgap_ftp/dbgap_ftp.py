@@ -9,7 +9,11 @@ class DbgapFtp(object):
     REGEX_STUDY_VERSION = re.compile(r'^phs(\d{6})\.v(\d+)\.p(\d+)$')
 
     def __init__(self, server='ftp.ncbi.nlm.nih.gov'):
-        """Create a new instance of the object and open an ftp connection."""
+        """Create a new instance of the object and open an ftp connection.
+
+        Keyword arguments:
+        server -- the path to the ftp server
+        """
         self.ftp = FTP(server, timeout=10)
         self.ftp.login()
         self.n_attempts = 5
@@ -28,6 +32,7 @@ class DbgapFtp(object):
         return '/dbgap/studies/phs{accession:06d}'.format(accession=accession)
 
     def _get_study_version_strings(self, accession):
+        """Return the study version accession strings associated with a given study."""
         directory = self._get_base_study_directory(accession)
         subdirs = self.ftp.nlst(directory)
         subdirs = [os.path.basename(x) for x in subdirs]
@@ -36,16 +41,27 @@ class DbgapFtp(object):
         return study_versions
 
     def _get_study_versions(self, accession):
+        """Return the integer versions associated with a given study."""
         version_directories = self._get_study_version_strings(accession)
         versions = [int(self.REGEX_STUDY_VERSION.search(v).group(2)) for v in version_directories]
         versions.sort()
         return versions
 
     def get_highest_study_version(self, accession):
+        """Return the highest version of a study.
+
+        Arguments:
+        accession -- the study accession integer (e.g., 7)
+
+        Returns:
+        the maximum study version on the ftp server, as an integer (e.g., 29)
+
+        """
         versions = self._get_study_versions(accession)
         return max(versions)
 
     def _get_study_version_directory(self, accession, version):
+        """Return the ftp directory for a given study version."""
         if version <= 0:
             raise ValueError(self.ERROR_STUDY_VERSION_VALUE)
         study_directory = self._get_base_study_directory(accession)
@@ -58,6 +74,16 @@ class DbgapFtp(object):
         return os.path.join(study_directory, matching_versions[0])
 
     def get_data_dictionaries(self, accession, version):
+        """Return the data dictionary filenames for a study version on the ftp server.
+
+        Arguments:
+        accession -- the study accession integer (e.g., 7)
+        version -- the study version integer (e.g, 29)
+
+        Returns:
+        a list of paths to data dictionary files on the ftp server.
+
+        """
         study_version_directory = self._get_study_version_directory(accession, version)
         dd_directory = os.path.join(study_version_directory, 'pheno_variable_summaries/')
         files = self.ftp.nlst(dd_directory)
@@ -66,6 +92,7 @@ class DbgapFtp(object):
         return files
 
     def _download_file(self, filename, local_directory):
+        """Download a file from the dbGaP server."""
         base = os.path.basename(filename)
         local_file = os.path.join(local_directory, base)
         # Attempt to download the file, retrying if necessary.
@@ -84,6 +111,21 @@ class DbgapFtp(object):
         return local_file
 
     def download_files(self, filenames, local_directory, silent=False):
+        """Download a set of files from the dbGaP server.
+
+        Arguments:
+        filenames -- the path to the files on the ftp server to download
+        local_directory -- the local directory into which to download the files
+
+        Keyword arguments:
+        silent -- operate in silent mode?
+
+        Returns:
+        a tuple of lists, where the first element is the local path to the
+        downloaded files, and the second element is a list of files that failed
+        to download.
+
+        """
         downloaded_files = []
         failed = []
         for filename in filenames:
