@@ -6,3 +6,7 @@ __pycache__
 htmlcov/*
 tmp*
 .nfs*
+*.egg-info
+dist
+build
+src
