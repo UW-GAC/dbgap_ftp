@@ -135,10 +135,11 @@ class DbgapFtp(object):
                 downloaded_files.append(local_file)
             except TimeoutError:
                 failed.append(filename)
-        if not silent:
-            if len(failed > 0):
+        if len(failed) > 0:
+            if not silent:
                 print('{} failed files:'.format(len(failed)))
                 for failed_file in failed:
                     print('  {}'.format(failed_file))
+        if not silent:
             print('done!')
         return downloaded_files, failed
